@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<p>This example uses the addEventListener() method to add two click events to the same button.</p>
+<textarea id="myBtn">type here</textarea><br><hr>
+<textarea id="myBtn1">type here</textarea><br><hr>
+<p id='myLog'></p>
+<p id='myJson'></p>
+
+<script>
+document.getElementById("myBtn").addEventListener("input", onRepeatFilterEvent);
+document.getElementById("myBtn1").addEventListener("input", onRepeatFilterEvent);
+var _log = document.getElementById("myLog");
+var _json = document.getElementById("myJson");
+
+const _timeout_repeat_filter = 1000;
+var _data_repeat_filter = {};
+
+
+function onRepeatFilterEvent() {
+  OnRepeatFilterEvent((_type,_id,_val)=>{
+    //console.log('repeatFilterEvent',_type,_id,_val);
+    _log.textContent = _val;
+    _json.textContent = JSON.stringify(_data_repeat_filter);
+    
+  },'GetActualType(this)', this.id, this.value);
+};
+
+function OnRepeatFilterEvent(_function,_type,_id,_val) {
+  
+  let _fun = function(id,blog){
+    console.log(Date.now(),_data_repeat_filter[id].type,id,_data_repeat_filter[id].val,blog?'from timer':'',_data_repeat_filter[id]['timer_id']);
+    clearTimeout(_data_repeat_filter[_id]['timer_id']);
+    _data_repeat_filter[id]['timer_id'] = 0;
+    _data_repeat_filter[id]['time']=Date.now();
+
+    _function(_data_repeat_filter[id].type,id,_data_repeat_filter[id].val)
+  };
+  
+  const _now = Date.now();
+  let _call='now';
+  if(_data_repeat_filter.hasOwnProperty(_id)){
+    if( _data_repeat_filter[_id]['time'] > (_now - _timeout_repeat_filter) ){
+      _call=_data_repeat_filter[_id]['timer_id'] == 0 ? 'later' : 'none';
+    }
+    _data_repeat_filter[_id]['val']=_val;
+  }
+  else{
+    _data_repeat_filter[_id] = { 
+      'time':  _now, 
+      'timer_id': 0, 
+      'type':  _type, 
+      'val': _val
+    };
+  }
+
+  if(_call=='later'){
+    _data_repeat_filter[_id]['timer_id'] = setTimeout((id)=>{
+      if(_data_repeat_filter.hasOwnProperty(id)){
+        _fun(id,true);
+      }
+    }, _timeout_repeat_filter, _id);  
+  }
+  else if(_call=='now'){
+    _fun(_id,false)
+  }
+}
+
+
+</script>
+
+</body>
+</html>
